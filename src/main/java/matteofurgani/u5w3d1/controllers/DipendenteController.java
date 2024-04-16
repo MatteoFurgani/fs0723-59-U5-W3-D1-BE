@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +41,7 @@ public class DipendenteController {
 
     // GET http://localhost:3001/dipendenti
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public Page<Dipendente> getDipendenti(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "10") int size,
                                           @RequestParam(defaultValue = "id") String sort) {
@@ -53,10 +55,26 @@ public class DipendenteController {
         return dipendenteService.findById(dipendentiId);
     }
 
+    @GetMapping("/me")
+    public Dipendente getProfile(@AuthenticationPrincipal Dipendente currentAuthenticatedDipendente) {
+        return currentAuthenticatedDipendente;
+    }
+
+    @PutMapping("/me")
+    public Dipendente updateProfile(@AuthenticationPrincipal Dipendente currentAuthenticatedDipendente, @RequestBody Dipendente updatedDipendente){
+        return this.dipendenteService.findByIdAndUpdate(currentAuthenticatedDipendente.getId(), updatedDipendente);
+    }
+
+    @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProfile(@AuthenticationPrincipal Dipendente currentAuthenticatedDipendente){
+        this.dipendenteService.findByIDAndDelete(currentAuthenticatedDipendente.getId());
+    }
+
     // PUT http://localhost:3001/dipendenti/{id} (+ req.body)
 
     @PutMapping("/{dipendentiId}")
-    @PreAuthorize("hasAuthority('ADIM')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public Dipendente findAndUpdate(@PathVariable int dipendentiId, @RequestBody Dipendente body){
         return dipendenteService.findByIdAndUpdate(dipendentiId, body);
     }

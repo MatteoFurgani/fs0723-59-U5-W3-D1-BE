@@ -41,8 +41,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
         jwtTools.verifyToken(accessToken);
 
-        filterChain.doFilter(request, response);
-
         String id =  jwtTools.extractIdFromToken(accessToken);
         Dipendente currentDipendente = this.dipendenteService.findById(Integer.parseInt(id));;
 
