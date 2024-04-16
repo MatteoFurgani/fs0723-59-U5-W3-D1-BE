@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,22 +28,28 @@ public class DipendenteService {
     @Autowired
     private Cloudinary cloudinaryUploader;
 
+    @Autowired
+    private PasswordEncoder bcrypt;
+
     public Dipendente save(NewDipendenteDTO body) throws IOException{
         dipendenteDAO.findByEmail(body.email()).ifPresent(
                 dipendente -> {
                     throw new BadRequestException("L'email " + body.email() + " è già in uso!");
                 });
-        Dipendente dipendente = new Dipendente();
-        dipendente.setNome(body.nome());
+        Dipendente dipendente = new Dipendente(body.username(),body.nome(), body.cognome(), body.email(), bcrypt.encode(body.password()), "https://ui-avatars.com/api/?name=" + body.nome().charAt(0) + "+" + body.cognome().charAt(0));
+
+        ;
+        /*dipendente.setNome(body.nome());
         dipendente.setCognome(body.cognome());
         dipendente.setEmail(body.email());
         dipendente.setPassword(body.password());
         dipendente.setUsername(body.username());
-        dipendente.setImmagineProfilo("https://ui-avatars.com/api/?name=" + body.nome().charAt(0) + "+" + body.cognome().charAt(0));
+        dipendente.setImmagineProfilo("https://ui-avatars.com/api/?name=" + body.nome().charAt(0) + "+" + body.cognome().charAt(0));*/
         return dipendenteDAO.save(dipendente);
     }
 
     public Page<Dipendente> getDipendente(int page, int size, String sort){
+        if(size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
         return dipendenteDAO.findAll(pageable);
     }
@@ -59,7 +66,8 @@ public class DipendenteService {
         found.setCognome(body.getCognome());
         found.setEmail(body.getEmail());
         found.setUsername(body.getUsername());
-        found.setImmagineProfilo(body.getImmagineProfilo());
+        found.setPassword(body.getPassword());
+        found.setImmagineProfilo("https://ui-avatars.com/api/?name=" + body.getNome().charAt(0) + "+" + body.getCognome().charAt(0));
         return dipendenteDAO.save(found);
     }
 

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +56,7 @@ public class DipendenteController {
     // PUT http://localhost:3001/dipendenti/{id} (+ req.body)
 
     @PutMapping("/{dipendentiId}")
+    @PreAuthorize("hasAuthority('ADIM')")
     public Dipendente findAndUpdate(@PathVariable int dipendentiId, @RequestBody Dipendente body){
         return dipendenteService.findByIdAndUpdate(dipendentiId, body);
     }
@@ -62,6 +64,7 @@ public class DipendenteController {
     // DELETE http://localhost:3001/dipendenti/{id}
 
     @DeleteMapping("/{dipendenteId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> findByIdAndDelete(@PathVariable int dipendenteId) {
 

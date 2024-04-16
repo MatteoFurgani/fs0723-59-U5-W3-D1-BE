@@ -4,8 +4,13 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import matteofurgani.u5w3d1.entities.Dipendente;
 import matteofurgani.u5w3d1.exceptions.UnauthorizedException;
+import matteofurgani.u5w3d1.services.DipendenteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,6 +24,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Autowired
     private JWTTools jwtTools;
+
+    @Autowired
+    private DipendenteService dipendenteService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -34,6 +42,16 @@ public class JWTFilter extends OncePerRequestFilter {
         jwtTools.verifyToken(accessToken);
 
         filterChain.doFilter(request, response);
+
+        String id =  jwtTools.extractIdFromToken(accessToken);
+        Dipendente currentDipendente = this.dipendenteService.findById(Integer.parseInt(id));;
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(currentDipendente, null, currentDipendente.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        filterChain.doFilter(request, response);
+
 
     }
 
